@@ -1,0 +1,35 @@
+#!/bin/bash
+
+RCPATH=/etc/satono
+
+. $RCPATH/satono.conf
+
+mkdir -p $LOGPATH/satono
+mkdir -p $TMPPATH/satono
+
+if [ $USE_SERVER == yes ]
+then
+    modprobe npreal2
+
+    if [ "$1" == "-r" ]
+    then
+        . $RCPATH/server.conf
+        /usr/lib/npreal2/driver/mxdelsvr $SERVERNAME
+        /usr/lib/npreal2/driver/mxaddsvr $SERVERNAME $PORTS
+        /usr/lib/npreal2/driver/mxloadsvr
+    fi
+fi
+
+CMD=""
+OP="new-session -d -s root "
+for COMP in `cat $RCPATH/computers.conf`
+do
+    NAME="`echo $COMP | cut -d- -f2-`"
+    NUM="`echo $COMP | cut -d- -f1`"
+    CMD="$CMD $OP -n $NAME $TMPPATH/satono/$NUM-$NAME.tmp.sh ;"
+    OP="new-window"
+    echo "LC_ALL=C /usr/bin/minicom -D /dev/${PORTTYPE}${NUM} -C $LOGPATH/satono/log.$NUM.$NAME.`date -I`.log -c on -8 -R utf8 ;" > $TMPPATH/satono/$NUM-$NAME.tmp.sh
+    chmod 755 $TMPPATH/satono/$NUM-$NAME.tmp.sh
+done
+CMD="$CMD select-window -t :0"
+/usr/bin/tmux $CMD

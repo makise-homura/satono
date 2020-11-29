@@ -1,0 +1,14 @@
+[Unit]
+Description=Satono - SeriAl Terminal Over NetwOrk
+After=syslog.target
+
+[Service]
+ExecStart=/usr/bin/satono
+ExecStop=/usr/bin/tmux kill-server
+StandardOutput=syslog
+Type=oneshot
+RemainAfterExit=yes
+KillMode=none
+
+[Install]
+WantedBy=multi-user.target
