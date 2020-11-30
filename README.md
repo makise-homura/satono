@@ -50,7 +50,7 @@ Manual start: run `satono`.
 
 Manual stop: run `tmux kill-session -t satono`, or `tmux kill-server` (if you have no other tmux sessions).
 
-Once `satono` is started, you may attach to it using `tmux attach` command (to detach, press Ctrl+B D).
+Once `satono` is started, you may attach to it using `tmux attach` command (or `tmux attach -t satono`, if you have another tmux sessions). To detach, press Ctrl+B D.
 
 If you have `systemd`, you may run `systemctl start satono` and `systemctl stop satono` correspondingly instead.
 
