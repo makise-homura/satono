@@ -4,7 +4,7 @@ After=syslog.target
 
 [Service]
 ExecStart=/usr/bin/satono
-ExecStop=/usr/bin/tmux kill-server
+ExecStop=/usr/bin/tmux kill-session -t satono
 StandardOutput=syslog
 Type=oneshot
 RemainAfterExit=yes

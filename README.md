@@ -48,15 +48,13 @@ Order of computers specified will correspond to order as they appear in tmux.
 
 Manual start: run `satono`.
 
-Manual stop: run `tmux kill-server`.
+Manual stop: run `tmux kill-session -t satono`, or `tmux kill-server` (if you have no other tmux sessions).
 
 Once `satono` is started, you may attach to it using `tmux attach` command (to detach, press Ctrl+B D).
 
 If you have `systemd`, you may run `systemctl start satono` and `systemctl stop satono` correspondingly instead.
 
 To make `satono` run on system startup, run `systemctl enable satono` (and `systemctl disable satono` if you don't wish it anymore).
-
-Note: To use `satono` in environments where `tmux` is used for something else, you may need to do some hacks to diverge different tmux sessions.
 
 ## Trivia
 

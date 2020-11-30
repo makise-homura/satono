@@ -21,7 +21,7 @@ then
 fi
 
 CMD=""
-OP="new-session -d -s root "
+OP="new-session -d -s satono "
 for COMP in `cat $RCPATH/computers.conf`
 do
     NAME="`echo $COMP | cut -d- -f2-`"
