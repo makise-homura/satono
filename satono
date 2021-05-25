@@ -1,11 +1,19 @@
 #!/bin/bash
 
 RCPATH=/etc/satono
+NPREALPATH=/usr/lib/npreal2/driver
 
 . $RCPATH/satono.conf
 
 mkdir -p $LOGPATH/satono
 mkdir -p $TMPPATH/satono
+
+add_server()
+{
+    echo "Adding server $1 ($2 ports)"
+    ./mxdelsvr $1
+    ./mxaddsvr $1 $2
+}
 
 if [ $USE_SERVER == yes ]
 then
@@ -14,9 +22,21 @@ then
     if [ "$1" == "-r" ]
     then
         . $RCPATH/server.conf
-        /usr/lib/npreal2/driver/mxdelsvr $SERVERNAME
-        /usr/lib/npreal2/driver/mxaddsvr $SERVERNAME $PORTS
-        /usr/lib/npreal2/driver/mxloadsvr
+        pushd $NPREALPATH > /dev/null
+        mkdir -p ./tmp
+        if [ "$SERVERS" ]
+        then
+            for SERVER in $SERVERS
+            do
+                SERVERNAME=${SERVER%:*}
+                PORTS=${SERVER#*:}
+                add_server $SERVERNAME $PORTS
+            done
+        else
+            add_server $SERVERNAME $PORTS
+        fi
+        ./mxloadsvr
+        popd > /dev/null
     fi
 fi
 

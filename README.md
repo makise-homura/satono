@@ -27,8 +27,21 @@
 
 Only used if `USE_SERVER=yes` and you use MOXA terminal server.
 
+* `SERVERS`: list of MOXA terminal servers (hostname/IP and number of ports of each server should be separated by colon, and such records should be separated by spaces).
+
+Example:
+
+    SERVERS="moxaserver1.local.lan:16 moxaserver2.local.lan:4"
+
+If you use only one server, you might use (deprecated) legacy variables:
+
 * `SERVERNAME`: hostname or IP of MOXA terminal server.
 * `PORTS`: number of ports on MOXA terminal server.
+
+Example:
+
+    SERVERNAME=moxaserver.local.lan
+    PORTS=32
 
 Note: you may run `satono -r` to reconfigure server, if you have trouble with its ports (e.g., you've just changed server IP/hostname).
 
