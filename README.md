@@ -11,7 +11,8 @@
 
 * Copy `*.conf` files to `/etc/satono` (create if needed).
 * Copy `satono` to `/usr/bin`.
-* If you have `systemd`, copy `satono.service` to `/lib/systemd/system/`.
+* If you have `systemd`, copy `satono.service` to `/lib/systemd/system/` directory.
+* If you have `sysvinit`, copy `satono.init.d` as `/etc/init.d/satono` file.
 * Edit `*.conf` files as you need.
 
 ## Configuration
@@ -65,9 +66,9 @@ Manual stop: run `tmux kill-session -t satono`, or `tmux kill-server` (if you ha
 
 Once `satono` is started, you may attach to it using `tmux attach` command (or `tmux attach -t satono`, if you have another tmux sessions). To detach, press Ctrl+B D.
 
-If you have `systemd`, you may run `systemctl start satono` and `systemctl stop satono` correspondingly instead.
+Or, instead, you may run `systemctl start satono` and `systemctl stop satono` (if you have `systemd`), or `service satono start` and `service satono stop` (if you have `sysvinit`) correspondingly.
 
-To make `satono` run on system startup, run `systemctl enable satono` (and `systemctl disable satono` if you don't wish it anymore).
+To make `satono` run on system startup, with `systemd`, run `systemctl enable satono` (and `systemctl disable satono` if you don't wish it anymore); or `chkconfig satono on` (and `chkconfig satono off`), with `sysvinit`.
 
 ## Trivia
 
