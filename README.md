@@ -5,7 +5,7 @@
 * tmux
 * minicom
 * MOXA npreal2 driver (if you use MOXA serial-to-ethernet terminal servers)
-* systemd (to run it automatically on startup)
+* systemd or sysvinit (to run it automatically on startup)
 
 ## Installation
 
@@ -23,12 +23,17 @@
 * `USE_SERVER`: `yes` or `no`; whether to use MOXA server, or directly deal with local serial ports.
 * `LOGPATH`: Where to store logs. A subdirectory named `satono` will be created, and logs will be put there.
 * `TMPPATH`: Where to store temporary scripts. A subdirectory named `satono` will be created, and such scripts will be put there. Should NOT be mounted with `-o noexec`!
+* `NPREALPATH` (optional, `/usr/lib/npreal2/driver` if not specified): Path to `mxaddsvr`, `mxloadsvr`, `mxdelsvr` utilities (makes sense only if `USE_SERVER` is `yes`).
+* `LOCALE` (optional, `ru_RU.UTF-8` if not specified): Locale to start `minicom` with.
+* `TMUX` (optional, `/usr/bin/tmux` if not specified): Path to `tmux` binary.
+* `MINICOM` (optional, `/usr/bin/minicom` if not specified): Path to `minicom` binary.
+* `SESSION` (optional, `satono` if not specified): Session name to display in `tmux`.
 
 ### server.conf
 
 Only used if `USE_SERVER=yes` and you use MOXA terminal server.
 
-* `SERVERS`: list of MOXA terminal servers (hostname/IP and number of ports of each server should be separated by colon, and such records should be separated by spaces).
+* `SERVERS`: list of MOXA terminal servers (hostname/IP and number of ports of each server should be separated by colon, and such records should be separated by spaces; server hostnames can't contain spaces).
 
 Example:
 
@@ -41,14 +46,14 @@ If you use only one server, you might use (deprecated) legacy variables:
 
 Example:
 
-    SERVERNAME=moxaserver.local.lan
+    SERVERNAME="moxaserver.local.lan"
     PORTS=32
-
-Note: you may run `satono -r` to reconfigure server, if you have trouble with its ports (e.g., you've just changed server IP/hostname).
 
 ### computers.conf
 
 Should consist of lines in format like `N-hostname`, where `N` is a number of port to which machine named `hostname` is connected.
+
+Hostname should not contain spaces.
 
 For example, if you have connected `ttyS3` to `some-machine`, you should write `3-some-machine` (and `PORTTYPE` in `satono.conf` should be `ttyS`). 
 
@@ -62,13 +67,13 @@ Order of computers specified will correspond to order as they appear in tmux.
 
 Manual start: run `satono`.
 
-Manual stop: run `tmux kill-session -t satono`, or `tmux kill-server` (if you have no other tmux sessions).
+Manual stop: run `satono --kill`.
 
 Once `satono` is started, you may attach to it using `tmux attach` command (or `tmux attach -t satono`, if you have another tmux sessions). To detach, press Ctrl+B D.
 
 Or, instead, you may run `systemctl start satono` and `systemctl stop satono` (if you have `systemd`), or `service satono start` and `service satono stop` (if you have `sysvinit`) correspondingly.
 
-To make `satono` run on system startup, with `systemd`, run `systemctl enable satono` (and `systemctl disable satono` if you don't wish it anymore); or `chkconfig satono on` (and `chkconfig satono off`), with `sysvinit`.
+To make `satono` run on system startup, with `systemd`, run `systemctl enable satono` (and `systemctl disable satono` if you don't wish it anymore); or `chkconfig satono on` (and `chkconfig satono off` to disable), with `sysvinit`.
 
 ## Trivia
 

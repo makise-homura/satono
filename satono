@@ -1,13 +1,29 @@
 #!/bin/bash
 
-RCPATH=/etc/satono
-NPREALPATH=/usr/lib/npreal2/driver
-LOCALE=ru_RU.UTF-8
+RCPATH="/etc/satono"
+NPREALPATH="/usr/lib/npreal2/driver"
+LOCALE="ru_RU.UTF-8"
+TMUX="/usr/bin/tmux"
+MINICOM="/usr/bin/minicom"
+SESSION="satono"
 
-. $RCPATH/satono.conf
+. "$RCPATH/satono.conf"
 
-mkdir -p $LOGPATH/satono
-mkdir -p $TMPPATH/satono
+if [ "$1" = "--kill" ]
+then
+    MPIDS="`"$TMUX" list-windows -F '#{pane_pid}' -t "$SESSION"`"
+    "$TMUX" kill-session -t "$SESSION"
+    for MPID in $MPIDS
+    do
+        timeout 30 tail --pid=$MPID -f /dev/null
+        RV=$?
+        [ $RV -ne 0 ] && exit $RV
+    done
+    exit 0
+fi
+
+mkdir -p "$LOGPATH/satono"
+mkdir -p "$TMPPATH/satono"
 
 add_server()
 {
@@ -16,42 +32,39 @@ add_server()
     ./mxaddsvr $1 $2
 }
 
-if [ $USE_SERVER == yes ]
+if [ "$USE_SERVER" = "yes" ]
 then
     modprobe npreal2
 
-    if [ "$1" == "-r" ]
+    . "$RCPATH/server.conf"
+    pushd "$NPREALPATH" > /dev/null
+    mkdir -p ./tmp
+    if [ "$SERVERS" ]
     then
-        . $RCPATH/server.conf
-        pushd $NPREALPATH > /dev/null
-        mkdir -p ./tmp
-        if [ "$SERVERS" ]
-        then
-            for SERVER in $SERVERS
-            do
-                SERVERNAME=${SERVER%:*}
-                PORTS=${SERVER#*:}
-                add_server $SERVERNAME $PORTS
-            done
-        else
-            add_server $SERVERNAME $PORTS
-        fi
-        ./mxloadsvr
-        popd > /dev/null
+        for SERVER in $SERVERS
+        do
+            SERVERNAME=${SERVER%:*}
+            PORTS=${SERVER#*:}
+            add_server "$SERVERNAME" "$PORTS" >> "$LOGPATH/satono/server.log"
+        done
+    else
+        add_server "$SERVERNAME" "$PORTS" >> "$LOGPATH/satono/server.log"
     fi
+    ./mxloadsvr >> "$LOGPATH/satono/server.log"
+    popd > /dev/null
 fi
 
 CMD=""
-OP="new-session -d -s satono "
-for COMP in `cat $RCPATH/computers.conf`
+OP="new-session -d -s $SESSION "
+for COMP in `cat "$RCPATH/computers.conf"`
 do
     NAME="`echo $COMP | cut -d- -f2-`"
     NUM="`echo $COMP | cut -d- -f1`"
-    CMD="$CMD $OP -n $NAME $TMPPATH/satono/$NUM-$NAME.tmp.sh ;"
+    CMD="$CMD $OP -n "$NAME" "$TMPPATH/satono/$NUM-$NAME.tmp.sh" ;"
     OP="new-window"
     LOGNAME="log.$NUM.$NAME.`date -I`.log"
-    echo "while true; do LC_ALL=$LOCALE /usr/bin/minicom -D /dev/${PORTTYPE}${NUM} -C $LOGPATH/satono/$LOGNAME -c on -8 -R UTF-8; done" > $TMPPATH/satono/$NUM-$NAME.tmp.sh
-    chmod 755 $TMPPATH/satono/$NUM-$NAME.tmp.sh
+    echo "K=n; trap 'K=y; pkill -p $$; wait' SIGHUP; while true; do LC_ALL=\"$LOCALE\" \"$MINICOM\" -D \"/dev/${PORTTYPE}${NUM}\" -C \"$LOGPATH/satono/$LOGNAME\" -c on -8 -R UTF-8; [ \$K = y ] && break; done" > "$TMPPATH/satono/$NUM-$NAME.tmp.sh"
+    chmod 755 "$TMPPATH/satono/$NUM-$NAME.tmp.sh"
 done
 CMD="$CMD select-window -t :0"
-/usr/bin/tmux $CMD
+"$TMUX" $CMD
